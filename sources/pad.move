@@ -14,6 +14,7 @@ module monopad:: pad {
     swords_created: u64,
   }
 
+  // initializer take a txcontext &mut
   fun init(ctx: &mut TxContext) {
     let forge = Forge {
         id: object::new(ctx),
@@ -36,7 +37,7 @@ module monopad:: pad {
       self.swords_created
   }
 
-  public entry fun sword_create(magic: u64, strength: u64, recipient: address, ctx: &mut TxContext) {
+  public entry fun sword_create(forge: &mut Forge, magic: u64, strength: u64, recipient: address, ctx: &mut TxContext) {
     use sui::transfer;
 
     let sword = Sword {
@@ -44,6 +45,8 @@ module monopad:: pad {
       strength: strength,
       id: object::new(ctx)
     };
+
+    forge.swords_created = forge.swords_created + 1;
 
     transfer::transfer(sword, recipient);
   }
@@ -58,6 +61,7 @@ module monopad:: pad {
   public fun test_sword_create() {
       use sui::transfer;
       use sui::tx_context;
+      use std::debug;
 
       // create a dummy TxContext for testing
       let ctx = tx_context::dummy();
@@ -68,6 +72,8 @@ module monopad:: pad {
           magic: 42,
           strength: 7,
       };
+
+      debug::print(&sword);
 
       // check if accessor functions return correct values
       assert!(magic(&sword) == 42, 1);
@@ -81,6 +87,7 @@ module monopad:: pad {
   #[test]
   public fun test_sword_transactions() {
     use sui::test_scenario;
+    use std::debug;
 
     let admin = @0xBEBEBE;
     let initial_owner = @0xCAFE;
@@ -97,8 +104,13 @@ module monopad:: pad {
     // 2. tx exec by admin to create the sword
     test_scenario::next_tx(scenario, admin);
     {
+      let forge = test_scenario::take_from_sender<Forge>(scenario);
+      debug::print(&forge);
+
       // create the sword and transfer it to initial_owner
-      sword_create(42, 7, initial_owner, test_scenario::ctx(scenario));
+      sword_create(&mut forge, 42, 7, initial_owner, test_scenario::ctx(scenario));
+
+      test_scenario::return_to_sender(scenario, forge);
     };
 
     // 3. tx exec by initial sword owner
@@ -126,5 +138,31 @@ module monopad:: pad {
 
     test_scenario::end(scenario_eval);
 
+  }
+
+  #[test]
+  public fun test_init() {
+    use sui::test_scenario;
+
+
+    let admin = @0xCAFE;
+
+    let scenario_eval = test_scenario::begin(admin);
+    let scenario = &mut scenario_eval;
+
+    {
+      init(test_scenario::ctx(scenario));
+    };
+
+    test_scenario::next_tx(scenario, admin);
+    {
+      let forge = test_scenario::take_from_sender<Forge>(scenario);
+      let swords = forge.swords_created;
+
+      assert!(swords == 0, 1);
+      test_scenario::return_to_sender(scenario, forge);
+    };
+
+    test_scenario::end(scenario_eval);
   }
 }
