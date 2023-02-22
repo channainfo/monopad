@@ -14,7 +14,8 @@ module monopad:: pad {
     swords_created: u64,
   }
 
-  // initializer take a txcontext &mut
+  // initializer take a txcontext &mut.
+  // is called exactly one when the package is published.f
   fun init(ctx: &mut TxContext) {
     let forge = Forge {
         id: object::new(ctx),
