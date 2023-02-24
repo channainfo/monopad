@@ -11,15 +11,26 @@ module monopad::color {
     alpha: u8
   }
 
-  public entry fun create_color(red: u32, green: u32, blue: u32, ctx: &mut TxContext){
-    let color = Color {
+  public fun new(red: u32, green: u32, blue: u32, ctx: &mut TxContext): Color {
+    Color {
       id: object::new(ctx),
       red: red,
       green: green,
       blue: blue,
       alpha: 0
-    };
+    }
+  }
 
+  public entry fun create_color(red: u32, green: u32, blue: u32, ctx: &mut TxContext){
+    // let color = Color {
+    //   id: object::new(ctx),
+    //   red: red,
+    //   green: green,
+    //   blue: blue,
+    //   alpha: 0
+    // };
+
+    let color = new(red, green, blue, ctx);
     transfer::transfer(color, tx_context::sender(ctx));
   }
 
