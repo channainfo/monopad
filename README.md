@@ -136,3 +136,20 @@ id: 0x28d511b9689871fd7d3303b5f9657b6287b48279
 red: 0
 
 ```
+
+### Query on-chain data
+
+Query on-chain data using SUI expolorer:
+
+- Object: <https://explorer.sui.io/object/{object_id}?network=devnet>
+- Transaction:  <https://explorer.sui.io/transaction/{tx_id}?network=devnet>
+
+Usign SUI CLI
+
+```sh
+# plain text
+sui client object your_object_id
+
+# json format
+sui client object your_object_id --json
+```
