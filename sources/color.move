@@ -21,6 +21,16 @@ module monopad::color {
     }
   }
 
+  public entry fun freeze_color(color: Color) {
+    // sender must own this object to freeze(immutable and owned by no one)
+    transfer::freeze_object(color)
+  }
+
+  public entry fun create_immutable_color(red: u32, green: u32, blue: u32, ctx: &mut TxContext) {
+    let color = new(red, green, blue, ctx);
+    transfer::freeze_object(color)
+  }
+
   public entry fun create_color(red: u32, green: u32, blue: u32, ctx: &mut TxContext){
     // let color = Color {
     //   id: object::new(ctx),
@@ -49,6 +59,76 @@ module monopad::color {
     to_color.green = from_color.green;
     to_color.blue = from_color.blue;
     to_color.alpha = from_color.alpha;
+  }
+
+  #[test]
+  public fun test_freeze_color(){
+    use sui::test_scenario;
+
+    let owner = @0x001;
+
+    let scenario_eval = test_scenario::begin(owner);
+    let scenario = &mut scenario_eval;
+
+    {
+      let ctx = test_scenario::ctx(scenario);
+      create_color(50, 60, 70, ctx);
+    };
+
+    test_scenario::next_tx(scenario, owner);
+    {
+      let color = test_scenario::take_from_sender<Color>(scenario);
+      freeze_color(color);
+    };
+
+    test_scenario::next_tx(scenario, owner);
+    {
+      assert!(!test_scenario::has_most_recent_for_sender<Color>(scenario), 0);
+    };
+
+    let anyone = @0x005;
+    test_scenario::next_tx(scenario, anyone);
+    {
+      let color = test_scenario::take_immutable<Color>(scenario);
+      let (red, green, blue) = (color.red, color.green, color.blue);
+
+      assert!(red == 50 && green == 60 && blue == 70, 0);
+      test_scenario::return_immutable(color);
+    };
+
+    test_scenario::end(scenario_eval);
+  }
+
+  #[test]
+  public fun test_create_immutable_color(){
+    use sui::test_scenario;
+
+    let sender = @0x003;
+    let scenario_eval = test_scenario::begin(sender);
+    let scenario = &mut scenario_eval;
+    {
+      let ctx = test_scenario::ctx(scenario);
+      create_immutable_color(30, 40, 50, ctx);
+    };
+
+    test_scenario::next_tx(scenario, sender);
+    {
+      assert!(!test_scenario::has_most_recent_for_sender<Color>(scenario), 0);
+    };
+
+    let anyone = @0x004;
+
+    test_scenario::next_tx(scenario, anyone);
+    {
+      let color = test_scenario::take_immutable<Color>(scenario);
+      let (red, green, blue) = (color.red, color.green, color.blue);
+
+      assert!(red == 30 && green == 40 && blue == 50, 0);
+
+      test_scenario::return_immutable(color);
+    };
+
+    test_scenario::end(scenario_eval);
   }
 
   #[test]
