@@ -153,3 +153,29 @@ sui client object your_object_id
 # json format
 sui client object your_object_id --json
 ```
+
+## Useful methods
+
+```rust
+  // get last inserted object id (address of the object)
+  tx_context::last_created_object_id(ctx);
+
+  // get object id from address
+  object::id_from_address(object_id_address)
+
+  // get object from sender
+  test_scenario::take_from_sender<Object>(scenario); // take the last object from sender
+  test_scenario::take_from_sender_by_id<Object>(scenario, object_id); // any object from id
+
+  test_scenario::take_immutable<Object>(scenario);
+
+  // return the object back
+  test_scenario::return_to_sender(scenario, an_object);
+  test_scenario::return_immutable(an_object)
+
+  // check 
+  test_scenario::has_most_recent_for_sender<Object>(scenario);
+
+
+
+```
