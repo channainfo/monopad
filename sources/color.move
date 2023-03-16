@@ -67,6 +67,15 @@ module monopad::color {
 
     let owner = @0x001;
 
+    std::debug::print(&b"Jororor");
+    std::debug::print(&std::string::utf8(b"Jororor"));
+
+    let vect: vector<u8> = b"Hola mundo";
+    let str: std::string::String = std::string::utf8(vect);
+
+    std::debug::print(&vect);
+    std::debug::print(&str);
+
     let scenario_eval = test_scenario::begin(owner);
     let scenario = &mut scenario_eval;
 

@@ -173,9 +173,12 @@ sui client object your_object_id --json
   test_scenario::return_to_sender(scenario, an_object);
   test_scenario::return_immutable(an_object)
 
-  // check 
+  // check
   test_scenario::has_most_recent_for_sender<Object>(scenario);
 
-
-
 ```
+
+## References
+
+- <https://github.com/sui-foundation/encode-sui-educate>
+- <https://github.com/MystenLabs/sui/tree/main/sui_programmability/examples>
